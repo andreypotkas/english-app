@@ -36,9 +36,7 @@ export class SeedsService {
     private readonly bookRepository: Repository<Book>,
     @InjectRepository(Word)
     private readonly wordRepository: Repository<Word>,
-  ) {
-    this.runIfEmpty();
-  }
+  ) {}
 
   async runIfEmpty(): Promise<{
     seeded: boolean;
