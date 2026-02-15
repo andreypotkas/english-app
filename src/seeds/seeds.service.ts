@@ -54,56 +54,48 @@ export class SeedsService {
   }
 
   async run(): Promise<{ books: number; words: number }> {
-    await this.wordRepository
-      .createQueryBuilder()
-      .delete()
-      .from(Word)
-      .where('id >= :id', { id: 0 })
-      .execute();
-    await this.bookRepository
-      .createQueryBuilder()
-      .delete()
-      .from(Book)
-      .where('id IN (:...ids)', { ids: [1, 2, 3, 4, 5, 6] })
-      .execute();
+    return this.wordRepository.manager.transaction(async (em) => {
+      await em.query('DELETE FROM words');
+      await em.query('DELETE FROM books');
 
-    for (let bookNum = 1; bookNum <= 6; bookNum++) {
-      await this.bookRepository.save({
-        id: bookNum,
-        name: BOOK_NAMES[bookNum],
-      });
-    }
-
-    let totalWords = 0;
-    const dataPath = path.resolve(__dirname, '../../data');
-
-    for (let bookNum = 1; bookNum <= 6; bookNum++) {
-      const module = await import(path.join(dataPath, `book${bookNum}.js`));
-      const rawList: RawWord[] = module.default ?? [];
-
-      const words = rawList.map((raw) =>
-        this.wordRepository.create({
-          word: raw.word,
-          wordTranslate: raw.wordTranslate,
-          bookId: bookNum,
-          image: raw.image ?? null,
-          audio: raw.audio ?? null,
-          audioMeaning: raw.audioMeaning ?? null,
-          audioExample: raw.audioExample ?? null,
-          textMeaning: raw.textMeaning ?? null,
-          textExample: raw.textExample ?? null,
-          transcription: raw.transcription ?? null,
-          textMeaningTranslate: raw.textMeaningTranslate ?? null,
-          textExampleTranslate: raw.textExampleTranslate ?? null,
-        }),
-      );
-
-      if (words.length > 0) {
-        await this.wordRepository.save(words);
-        totalWords += words.length;
+      for (let bookNum = 1; bookNum <= 6; bookNum++) {
+        await em.save(Book, {
+          id: bookNum,
+          name: BOOK_NAMES[bookNum],
+        });
       }
-    }
 
-    return { books: 6, words: totalWords };
+      let totalWords = 0;
+      const dataPath = path.resolve(__dirname, '../../data');
+
+      for (let bookNum = 1; bookNum <= 6; bookNum++) {
+        const module = await import(path.join(dataPath, `book${bookNum}.js`));
+        const rawList: RawWord[] = module.default ?? [];
+
+        const words = rawList.map((raw) =>
+          em.create(Word, {
+            word: raw.word,
+            wordTranslate: raw.wordTranslate,
+            bookId: bookNum,
+            image: raw.image ?? null,
+            audio: raw.audio ?? null,
+            audioMeaning: raw.audioMeaning ?? null,
+            audioExample: raw.audioExample ?? null,
+            textMeaning: raw.textMeaning ?? null,
+            textExample: raw.textExample ?? null,
+            transcription: raw.transcription ?? null,
+            textMeaningTranslate: raw.textMeaningTranslate ?? null,
+            textExampleTranslate: raw.textExampleTranslate ?? null,
+          }),
+        );
+
+        if (words.length > 0) {
+          await em.save(Word, words);
+          totalWords += words.length;
+        }
+      }
+
+      return { books: 6, words: totalWords };
+    });
   }
 }
