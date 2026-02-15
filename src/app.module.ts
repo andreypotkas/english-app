@@ -23,7 +23,7 @@ import { WordsModule } from './words/words.module';
         password: config.get('DB_PASSWORD', 'postgres'),
         database: config.get('DB_NAME', 'english_app'),
         entities: [User, Book, Word],
-        synchronize: config.get('NODE_ENV') !== 'production',
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),
