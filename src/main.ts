@@ -5,6 +5,7 @@ import { SeedsService } from './seeds/seeds.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
 
   const config = new DocumentBuilder()
     .setTitle('English App API')
