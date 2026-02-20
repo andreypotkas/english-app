@@ -10,7 +10,7 @@ services:
       - db
 
   db:
-    image: postgis/postgis:latest
+    image: postgres:16-alpine
     platform: 'linux/amd64'
     restart: always
     environment:
