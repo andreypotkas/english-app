@@ -1,32 +1,23 @@
 services:
   app:
-    build: .
-    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
     ports:
       - '3000:3000'
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES: ${JWT_EXPIRES}
     depends_on:
-      - postgres
+      - db
 
-  postgres:
-    image: postgres:16-alpine
-    restart: unless-stopped
+  db:
+    image: postgis/postgis:latest
+    platform: 'linux/amd64'
+    restart: always
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - '5440:5432'
+      - POSTGRES_DB=${DATABASE_DB}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+      - ./data/database:/var/lib/postgresql/data
+    ports:
+      - '${DATABASE_PORT_OUT}:5432'
