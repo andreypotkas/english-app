@@ -4,6 +4,15 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: always
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: "5432"
+      DATABASE_DB: ${DATABASE_DB}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES: ${JWT_EXPIRES}
+      NODE_ENV: ${NODE_ENV}
     ports:
       - '3000:3000'
     depends_on:
